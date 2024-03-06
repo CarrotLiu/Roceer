@@ -13,6 +13,8 @@ void setup(){
   pinMode(12, OUTPUT);
   pinMode(motor1IN, OUTPUT);
   pinMode(motor1OUT, OUTPUT);
+  pinMode(motor2IN, OUTPUT);
+  pinMode(motor2OUT, OUTPUT);
   digitalWrite(12, HIGH);
 }
 

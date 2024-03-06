@@ -9,6 +9,8 @@
 #include <Adafruit_SSD1306.h>
 Adafruit_MPU6050 mpu;
 
+uint8_t broadcastAddress[] = {0x08, 0xB6, 0x1F, 0xB9, 0x55, 0xCC}; //roccer address: 08:B6:1F:B9:55:CC
+
 void setup() {
   Serial.begin(115200); 
   delay(1000);
