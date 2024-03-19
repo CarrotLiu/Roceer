@@ -9,13 +9,52 @@
 #include <Adafruit_SSD1306.h>
 Adafruit_MPU6050 mpu;
 
+float aX;
+float aY;
+float aZ;
+float gX;
+float gY;
+float gZ;
+
 uint8_t broadcastAddress[] = {0x08, 0xB6, 0x1F, 0xB9, 0x55, 0xCC}; //roccer address: 08:B6:1F:B9:55:CC
+
+
+typedef struct struct_message {
+    float accX;
+    float accY;
+    float accZ;
+} struct_message;
+
+// Callback when data is sent
+void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+  Serial.print("\r\nLast Packet Send Status:\t");
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  if (status ==0){
+    success = "Delivery Success :)";
+  }
+  else{
+    success = "Delivery Fail :(";
+  }
+}
+
+// Create a struct_message to hold incoming sensor readings
+struct_message controllerReadings;
+struct_message soccerReadings;
+
+// Callback when data is received
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  memcpy(&soccerReadings, incomingData, sizeof(soccerReadings));
+  Serial.print("Bytes received: ");
+  Serial.println(len);
+}
+
+esp_now_peer_info_t peerInfo;
+String success;
 
 void setup() {
   Serial.begin(115200); 
   delay(1000);
   WiFi.mode(WIFI_MODE_STA);
-  
 
 //accelorator initialization
  if (!mpu.begin()) {
@@ -85,25 +124,76 @@ void setup() {
     break;
   }
 
-  Serial.println(WiFi.macAddress()); //D4:F9:8D:04:5F:24
+  // Init ESP-NOW
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+
+  // Once ESPNow is successfully Init, we will register for Send CB to
+  // get the status of Trasnmitted packet
+  esp_now_register_send_cb(OnDataSent);
+  
+  // Register peer
+  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+  peerInfo.channel = 0;  
+  peerInfo.encrypt = false;
+  
+  // Add peer        
+  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+    Serial.println("Failed to add peer");
+    return;
+  }
+  // Register for a callback function that will be called when data is received
+  esp_now_register_recv_cb(OnDataRecv);
+  // Serial.println(WiFi.macAddress()); //D4:F9:8D:04:5F:24
 }
 
-void loop() {
+
+void getReadings(){
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
+
+  aX = a.acceleration.x;
+  aY = a.acceleration.y;
+  aZ = a.acceleration.z;
+  gX = g.gyro.x;
+  gY = g.gyro.y;  
+  gZ = g.gyro.z;
+
+  //Serial messages
   Serial.print("Acceleration X: ");
-  Serial.print(a.acceleration.x);
+  Serial.print(aX);
   Serial.print(", Y: ");
-  Serial.print(a.acceleration.y);
+  Serial.print(aY);
   Serial.print(", Z: ");
-  Serial.print(a.acceleration.z);
+  Serial.print(aZ);
   Serial.println(" m/s^2");
 
   Serial.print("Rotation X: ");
-  Serial.print(g.gyro.x);
+  Serial.print(gX);
   Serial.print(", Y: ");
-  Serial.print(g.gyro.y);
+  Serial.print(gY);
   Serial.print(", Z: ");
-  Serial.print(g.gyro.z);
+  Serial.print(gZ);
   Serial.println(" rad/s");
+}
+
+void loop() {
+  
+  getReadings();
+  controllerReadings.accX = aX;
+  controllerReadings.accY = aY;
+  controllerReadings.accZ = aZ;
+ // Send message via ESP-NOW
+  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &controllerReadings, sizeof(controllerReadings));
+   
+  if (result == ESP_OK) {
+    Serial.println("Sent with success");
+  }
+  else {
+    Serial.println("Error sending the data");
+  }
+  delay(1000);
+  
 }

@@ -1,9 +1,19 @@
+#include "WiFi.h"
+
 int motor1IN = 14;
 int motor1OUT = 27;
 int motor2IN = 25;
 int motor2OUT = 26;
 int spd = 10;
-#include "WiFi.h"
+
+typedef struct struct_message {
+    float accX;
+    float accY;
+    float accZ;
+} struct_message;
+
+struct_message soccerReadings;
+
 void setup(){
   Serial.begin(115200);
   delay(1000);
@@ -19,6 +29,8 @@ void setup(){
 }
 
 void loop() {
+  
+
   digitalWrite(motor1IN, HIGH);
   digitalWrite(motor1OUT, LOW);
   digitalWrite(motor2IN, LOW);
