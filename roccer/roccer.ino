@@ -43,13 +43,26 @@ void loop() {
     digitalWrite(motor1OUT, LOW);
     digitalWrite(motor2IN, LOW);
     digitalWrite(motor2OUT, HIGH);
-    delay(3000);
-    digitalWrite(motor2IN, HIGH);
-    digitalWrite(motor2OUT, LOW);
+    delay(100);
+  }else if(soccerReadings.accX < 0){
     digitalWrite(motor1IN, LOW);
     digitalWrite(motor1OUT, HIGH);
-    delay(3000);
+    digitalWrite(motor2IN, HIGH);
+    digitalWrite(motor2OUT, LOW);
+    delay(100);
   }
+  // if(soccerReadings.accY > 0){
+  //   digitalWrite(motor1IN, HIGH);
+  //   digitalWrite(motor1OUT, LOW);
+  //   digitalWrite(motor2IN, HIGH);
+  //   digitalWrite(motor2OUT, LOW);
+  //   delay(1000);
+  //   digitalWrite(motor2IN, HIGH);
+  //   digitalWrite(motor2OUT, LOW);
+  //   digitalWrite(motor1IN, LOW);
+  //   digitalWrite(motor1OUT, HIGH);
+  //   delay(3000);
+  // }
   // Your motor control code here
 }
 
