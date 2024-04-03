@@ -1,4 +1,5 @@
 #include "WiFi.h"
+#include <esp_now.h>
 
 int motor1IN = 14;
 int motor1OUT = 27;
@@ -14,31 +15,49 @@ typedef struct struct_message {
 
 struct_message soccerReadings;
 
-void setup(){
+void setup() {
   Serial.begin(115200);
   delay(1000);
   WiFi.mode(WIFI_MODE_STA);
-  Serial.println(WiFi.macAddress()); //08:B6:1F:B9:55:CC
-  //motor initialization
-  pinMode(12, OUTPUT);
+  
+  pinMode(12, OUTPUT);  // Assuming this controls the motor enable pin
   pinMode(motor1IN, OUTPUT);
   pinMode(motor1OUT, OUTPUT);
   pinMode(motor2IN, OUTPUT);
   pinMode(motor2OUT, OUTPUT);
-  digitalWrite(12, HIGH);
+  digitalWrite(12, HIGH); // Assuming this enables the motor
+  
+  esp_now_init();
+  esp_now_register_recv_cb(OnDataRecv);
 }
 
 void loop() {
-  
+  Serial.print("accX:");
+  Serial.print(soccerReadings.accX);
+  Serial.print("accY:");
+  Serial.print(soccerReadings.accY);
+  Serial.print("accZ:");
+  Serial.print(soccerReadings.accZ);
+  if(soccerReadings.accX > 0){
+    digitalWrite(motor1IN, HIGH);
+    digitalWrite(motor1OUT, LOW);
+    digitalWrite(motor2IN, LOW);
+    digitalWrite(motor2OUT, HIGH);
+    delay(3000);
+    digitalWrite(motor2IN, HIGH);
+    digitalWrite(motor2OUT, LOW);
+    digitalWrite(motor1IN, LOW);
+    digitalWrite(motor1OUT, HIGH);
+    delay(3000);
+  }
+  // Your motor control code here
+}
 
-  digitalWrite(motor1IN, HIGH);
-  digitalWrite(motor1OUT, LOW);
-  digitalWrite(motor2IN, LOW);
-  digitalWrite(motor2OUT, HIGH);
-  delay(3000);
-  digitalWrite(motor2IN, HIGH);
-  digitalWrite(motor2OUT, LOW);
-  digitalWrite(motor1IN, LOW);
-  digitalWrite(motor1OUT, HIGH);
-  delay(3000);
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  memcpy(&soccerReadings, incomingData, sizeof(soccerReadings));
+  Serial.print("Bytes received: ");
+  Serial.println(len);
+
+
+  // Use soccerReadings.accX, soccerReadings.accY, soccerReadings.accZ to control the motors
 }
