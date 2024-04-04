@@ -20,12 +20,12 @@ void setup() {
   delay(1000);
   WiFi.mode(WIFI_MODE_STA);
   
-  pinMode(12, OUTPUT);  // Assuming this controls the motor enable pin
+  pinMode(12, OUTPUT);
   pinMode(motor1IN, OUTPUT);
   pinMode(motor1OUT, OUTPUT);
   pinMode(motor2IN, OUTPUT);
   pinMode(motor2OUT, OUTPUT);
-  digitalWrite(12, HIGH); // Assuming this enables the motor
+  digitalWrite(12, HIGH);
   
   esp_now_init();
   esp_now_register_recv_cb(OnDataRecv);
@@ -51,7 +51,7 @@ void loop() {
     digitalWrite(motor2OUT, LOW);
     delay(100);
   }
-  // if(soccerReadings.accY > 0){
+  // if(soccerReadings.ac cY > 0){
   //   digitalWrite(motor1IN, HIGH);
   //   digitalWrite(motor1OUT, LOW);
   //   digitalWrite(motor2IN, HIGH);
@@ -63,14 +63,10 @@ void loop() {
   //   digitalWrite(motor1OUT, HIGH);
   //   delay(3000);
   // }
-  // Your motor control code here
 }
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&soccerReadings, incomingData, sizeof(soccerReadings));
   Serial.print("Bytes received: ");
   Serial.println(len);
-
-
-  // Use soccerReadings.accX, soccerReadings.accY, soccerReadings.accZ to control the motors
 }
