@@ -63,16 +63,20 @@ A1B1TOF/299792458
 */
 
 #include <WiFi.h>
+#include <esp_now.h>
 #include "time.h"
 #include "sntp.h"
 
-const char* ssid = "";
-const char* password = "";
+const char* ssid = "XCFKHX";
+const char* password = "12345678";
 
 const char* ntpServer1 = "pool.ntp.org";
 const char* ntpServer2 = "time.nist.gov";
 const long gmtOffset_sec = 3600;
 const int daylightOffset_sec = 3600;
+
+uint8_t broadcastAddress[] = {0xBC, 0xDD, 0xC2, 0xC8, 0xA3, 0x3C}; //0x84, 0x0D, 0x8E, 0xE6, 0x69, 0x7C ESP6 // 0xBC, 0xDD, 0xC2, 0xC8, 0xA3, 0x3C ESP3
+String success = "";
 
 String anchorID = "A0";
 float anchorX = 0;
@@ -81,7 +85,7 @@ long long int systemTime = 0;
 
 typedef struct rocinfo {
   String senderID = "A0";
-  long sendTime = 0;
+  long long int sendTime = 0;
 
   float a1X = 0;
   float a1Y = 0;
@@ -101,10 +105,12 @@ typedef struct rocinfo {
 
   int a1p1PGC = 0;
   int a2p1PGC = 0;
-};
+}rocinfo;
 
 rocinfo systemStruct;
 rocinfo incomingStruct;
+
+esp_now_peer_info_t peerInfo;
 
 void setup() {
   Serial.begin(115200);
@@ -118,14 +124,36 @@ void setup() {
     Serial.print(".");
   }
   Serial.println(" CONNECTED");
+  updateTime();
+  WiFi.mode(WIFI_STA);
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+  //esp_now_register_send_cb(OnDataSent);
+  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+  peerInfo.channel = 0;  
+  peerInfo.encrypt = false;
+  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+    Serial.println("Failed to add peer");
+    return;
+  }
+  esp_now_register_recv_cb(OnDataRecv);
 }
 
 void loop() {
+  delay(5000);
   updateTime(); //run only when asked for?
   //send msg
-  
-  
+  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &systemStruct, sizeof(systemStruct));
+  /*if (result == ESP_OK) {
+    Serial.println("Sent with success");
+  }
+  else {
+    Serial.println("Error sending the data");
+  }*/
   //rec msg
+
   
 }
 
@@ -149,4 +177,23 @@ void updateTime() {
   usec = tv.tv_usec;
   sprintf(buffer,"%d%d",now,usec);
   systemTime = atoll(buffer);
+  systemStruct.sendTime = systemTime;
+}
+
+void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+  Serial.print("\r\nLast Packet Send Status:\t");
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  if (status ==0){
+    success = "Delivery Success :)";
+  }
+  else{
+    success = "Delivery Fail :(";
+  }
+}
+
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  memcpy(&incomingStruct, incomingData, sizeof(incomingStruct));
+  long long int timeRec = incomingStruct.sendTime;
+  updateTime();
+  Serial.println(String(systemTime) + " - " + String(timeRec) + " = " + String(systemTime-timeRec) + "\tDistance: " + String(((systemTime-timeRec)*1000000)/299792458));
 }
