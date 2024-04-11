@@ -17,7 +17,7 @@ struct_message soccerReadings;
 
 void setup() {
   Serial.begin(115200);
-  delay(1000);
+  delay(2000);
   WiFi.mode(WIFI_MODE_STA);
   
   pinMode(12, OUTPUT);
@@ -29,6 +29,7 @@ void setup() {
   
   esp_now_init();
   esp_now_register_recv_cb(OnDataRecv);
+
 }
 
 void loop() {
@@ -38,31 +39,38 @@ void loop() {
   Serial.print(soccerReadings.accY);
   Serial.print("accZ:");
   Serial.print(soccerReadings.accZ);
-  if(soccerReadings.accX > 0){
-    digitalWrite(motor1IN, HIGH);
+  if(abs(soccerReadings.accX) < 3.5 && abs(soccerReadings.accY) < 3.5){
+    digitalWrite(motor1IN, LOW);
     digitalWrite(motor1OUT, LOW);
     digitalWrite(motor2IN, LOW);
-    digitalWrite(motor2OUT, HIGH);
-    delay(100);
-  }else if(soccerReadings.accX < 0){
-    digitalWrite(motor1IN, LOW);
-    digitalWrite(motor1OUT, HIGH);
-    digitalWrite(motor2IN, HIGH);
     digitalWrite(motor2OUT, LOW);
-    delay(100);
+  }else{
+    if(soccerReadings.accX > soccerReadings.accY){
+      if(soccerReadings.accX > 0){
+        digitalWrite(motor1IN, HIGH);
+        digitalWrite(motor1OUT, LOW);
+        digitalWrite(motor2IN, LOW);
+        digitalWrite(motor2OUT, HIGH);
+      }else{
+        digitalWrite(motor1IN, LOW);
+        digitalWrite(motor1OUT, HIGH);
+        digitalWrite(motor2IN, HIGH);
+        digitalWrite(motor2OUT, LOW);
+      }
+    }else{
+      if(soccerReadings.accY > 0){
+        digitalWrite(motor1IN, HIGH);
+        digitalWrite(motor1OUT, LOW);
+        digitalWrite(motor2IN, HIGH);
+        digitalWrite(motor2OUT, LOW);
+      }else if(soccerReadings.accY < 0){
+        digitalWrite(motor1IN, LOW);
+        digitalWrite(motor1OUT, HIGH);
+        digitalWrite(motor2IN, LOW);
+        digitalWrite(motor2OUT, HIGH);    
+      }
+    }
   }
-  // if(soccerReadings.ac cY > 0){
-  //   digitalWrite(motor1IN, HIGH);
-  //   digitalWrite(motor1OUT, LOW);
-  //   digitalWrite(motor2IN, HIGH);
-  //   digitalWrite(motor2OUT, LOW);
-  //   delay(1000);
-  //   digitalWrite(motor2IN, HIGH);
-  //   digitalWrite(motor2OUT, LOW);
-  //   digitalWrite(motor1IN, LOW);
-  //   digitalWrite(motor1OUT, HIGH);
-  //   delay(3000);
-  // }
 }
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
