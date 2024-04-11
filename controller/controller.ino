@@ -51,9 +51,15 @@ void setup() {
   peerInfo.channel = 0;
   peerInfo.encrypt = false;
 
+  while(true) {
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     Serial.println("Failed to add peer");
+    delay(50);
     return;
+  }
+  else {
+    break;
+    }
   }
 }
 
