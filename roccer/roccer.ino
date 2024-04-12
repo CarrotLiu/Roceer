@@ -46,29 +46,32 @@ void loop() {
     analogWrite(motor2OUT, 0);
   }else{
     if(soccerReadings.accX > soccerReadings.accY){
-      float spdX = map(soccerReadings.accX, 0, 50, 30, 255);
       if(soccerReadings.accX > 0){
-        analogWrite(motor1IN, spdX)
+        float spdX = map(soccerReadings.accX, 0, 50, 160, 255);
+        analogWrite(motor1IN, spdX);
         analogWrite(motor1OUT, 0);
         analogWrite(motor2IN, 0);
         analogWrite(motor2OUT, spdX);
       }else{
+        float spdX = map(soccerReadings.accX, -50, 0, 255, 160);
         analogWrite(motor1IN, 0);
         analogWrite(motor1OUT, spdX);
         analogWrite(motor2IN, spdX);
         analogWrite(motor2OUT, 0);
       }
     }else{
-      float spdY = map(soccerReadings.accY, 0, 50, 30, 255);
+      
       if(soccerReadings.accY > 0){
+        float spdY = map(soccerReadings.accY, 0, 50, 160, 255);
         analogWrite(motor1IN, spdY);
-        analogWrite(motor1OUT, LOW);
+        analogWrite(motor1OUT, 0);
         analogWrite(motor2IN, spdY);
-        analogWrite(motor2OUT, LOW);
+        analogWrite(motor2OUT, 0);
       }else if(soccerReadings.accY < 0){
-        analogWrite(motor1IN, LOW);
+        float spdY = map(soccerReadings.accY, -50, 0, 255, 160);
+        analogWrite(motor1IN, 0);
         analogWrite(motor1OUT, spdY);
-        analogWrite(motor2IN, LOW);
+        analogWrite(motor2IN, 0);
         analogWrite(motor2OUT, spdY);    
       }
     }
