@@ -142,7 +142,6 @@ void setup() {
 }
 
 void loop() {
-  delay(5000);
   updateTime(); //run only when asked for?
   //send msg
   esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &systemStruct, sizeof(systemStruct));

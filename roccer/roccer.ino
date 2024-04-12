@@ -39,35 +39,37 @@ void loop() {
   Serial.print(soccerReadings.accY);
   Serial.print("accZ:");
   Serial.print(soccerReadings.accZ);
-  if(abs(soccerReadings.accX) < 3.5 && abs(soccerReadings.accY) < 3.5){
-    digitalWrite(motor1IN, LOW);
-    digitalWrite(motor1OUT, LOW);
-    digitalWrite(motor2IN, LOW);
-    digitalWrite(motor2OUT, LOW);
+  if(abs(soccerReadings.accX) < 3.6 && abs(soccerReadings.accY) < 3.6){
+    analogWrite(motor1IN, 0);
+    analogWrite(motor1OUT, 0);
+    analogWrite(motor2IN, 0);
+    analogWrite(motor2OUT, 0);
   }else{
     if(soccerReadings.accX > soccerReadings.accY){
+      float spdX = map(soccerReadings.accX, 0, 50, 30, 255);
       if(soccerReadings.accX > 0){
-        digitalWrite(motor1IN, HIGH);
-        digitalWrite(motor1OUT, LOW);
-        digitalWrite(motor2IN, LOW);
-        digitalWrite(motor2OUT, HIGH);
+        analogWrite(motor1IN, spdX)
+        analogWrite(motor1OUT, 0);
+        analogWrite(motor2IN, 0);
+        analogWrite(motor2OUT, spdX);
       }else{
-        digitalWrite(motor1IN, LOW);
-        digitalWrite(motor1OUT, HIGH);
-        digitalWrite(motor2IN, HIGH);
-        digitalWrite(motor2OUT, LOW);
+        analogWrite(motor1IN, 0);
+        analogWrite(motor1OUT, spdX);
+        analogWrite(motor2IN, spdX);
+        analogWrite(motor2OUT, 0);
       }
     }else{
+      float spdY = map(soccerReadings.accY, 0, 50, 30, 255);
       if(soccerReadings.accY > 0){
-        digitalWrite(motor1IN, HIGH);
-        digitalWrite(motor1OUT, LOW);
-        digitalWrite(motor2IN, HIGH);
-        digitalWrite(motor2OUT, LOW);
+        analogWrite(motor1IN, spdY);
+        analogWrite(motor1OUT, LOW);
+        analogWrite(motor2IN, spdY);
+        analogWrite(motor2OUT, LOW);
       }else if(soccerReadings.accY < 0){
-        digitalWrite(motor1IN, LOW);
-        digitalWrite(motor1OUT, HIGH);
-        digitalWrite(motor2IN, LOW);
-        digitalWrite(motor2OUT, HIGH);    
+        analogWrite(motor1IN, LOW);
+        analogWrite(motor1OUT, spdY);
+        analogWrite(motor2IN, LOW);
+        analogWrite(motor2OUT, spdY);    
       }
     }
   }
