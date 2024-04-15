@@ -45,7 +45,7 @@ void loop() {
     analogWrite(motor2IN, 0);
     analogWrite(motor2OUT, 0);
   }else{
-    if(soccerReadings.accX > soccerReadings.accY){
+    if(abs(soccerReadings.accX) > abs(soccerReadings.accY)){
       if(soccerReadings.accX > 0){
         float spdX = map(soccerReadings.accX, 0, 50, 160, 255);
         analogWrite(motor1IN, spdX);
@@ -60,7 +60,6 @@ void loop() {
         analogWrite(motor2OUT, 0);
       }
     }else{
-      
       if(soccerReadings.accY > 0){
         float spdY = map(soccerReadings.accY, 0, 50, 160, 255);
         analogWrite(motor1IN, spdY);
